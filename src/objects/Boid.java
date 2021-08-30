@@ -5,6 +5,7 @@ import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.Rectangle;
 import java.awt.geom.AffineTransform;
+import java.util.Random;
 
 import basics.Game;
 import basics.GameObject;
@@ -17,15 +18,15 @@ public class Boid extends GameObject {
 	private float maxSpeed;
 	private float maxForce;
 
-	public Boid(float x, float y, ID id, Handler handler, float startSpeedX, float startSpeedY, float maxSpeed,
-			float maxForce) {
+	public Boid(float x, float y, ID id, Handler handler, float maxSpeed, float maxForce) {
 		super(x, y, id);
 
 		this.handler = handler;
 		this.maxSpeed = maxSpeed;
 		this.maxForce = maxForce;
 
-		speed = new Vector(startSpeedX, startSpeedY);
+		var r = new Random();
+		speed = new Vector(r.nextInt(2), r.nextInt(4));
 	}
 
 	public void tick() {

@@ -15,22 +15,20 @@ public class Game extends Canvas implements Runnable {
 	private static final long serialVersionUID = -5571995104017886412L;
 	public static final int WIDTH = 1350;
 	public static final int HEIGHT = WIDTH / 12 * 9;
-	private Thread thread;
+	private transient Thread thread;
 	private boolean running = false;
-	private Handler handler;
+	private transient Handler handler;
 	private static final Logger LOGGER = Logger.getLogger(Game.class.getName());
 
 	public Game() {
-
 		handler = new Handler();
 
 		// projects
 		/////////////////////////////
 
-		var r = new Random();
 		for (var i = 0; i < 500; i++) {
-			handler.addObject(new Boid(new Random().nextInt(WIDTH), new Random().nextInt(HEIGHT), ID.BOID, handler,
-					r.nextFloat() * 2 - 1, r.nextFloat() * 2 - 1, 4f, 0.5f));
+			handler.addObject(
+					new Boid(new Random().nextInt(WIDTH), new Random().nextInt(HEIGHT), ID.BOID, handler, 4f, 0.5f));
 		}
 
 		/////////////////////////////
@@ -86,12 +84,10 @@ public class Game extends Canvas implements Runnable {
 	}
 
 	public void tick() {
-
 		handler.tick();
 	}
 
 	public void render() {
-
 		var bs = this.getBufferStrategy();
 		if (bs == null) {
 			this.createBufferStrategy(3);
