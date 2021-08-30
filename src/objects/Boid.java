@@ -5,6 +5,7 @@ import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.Rectangle;
 import java.awt.geom.AffineTransform;
+
 import basics.Game;
 import basics.GameObject;
 import basics.Handler;
@@ -33,9 +34,9 @@ public class Boid extends GameObject {
 		Vector align = align();
 		Vector cohesion = cohesion();
 
-		seperation.mult(0.6f);
-		align.mult(0.5f);
-		cohesion.mult(0.65f);
+		seperation.mult(1f);
+		align.mult(1f);
+		cohesion.mult(0.9f);
 
 		acceleration.add(seperation);
 		acceleration.add(align);
@@ -43,22 +44,22 @@ public class Boid extends GameObject {
 
 		speed.add(acceleration);
 		speed.limit(maxSpeed);
-		location.add(speed);
+		position.add(speed);
 		acceleration.mult(0);
 
 		border();
 	}
 
 	private void border() {
-		if (location.x > Game.WIDTH)
-			location.x = 0;
-		else if (location.x < 0)
-			location.x = Game.WIDTH;
+		if (position.x > Game.WIDTH)
+			position.x = 0;
+		else if (position.x < 0)
+			position.x = Game.WIDTH;
 
-		if (location.y > Game.HEIGHT)
-			location.y = 0;
-		else if (location.y < 0)
-			location.y = Game.HEIGHT;
+		if (position.y > Game.HEIGHT)
+			position.y = 0;
+		else if (position.y < 0)
+			position.y = Game.HEIGHT;
 
 	}
 
@@ -70,12 +71,12 @@ public class Boid extends GameObject {
 		AffineTransform transform = g2d.getTransform();
 
 		double angle = Math.atan2(speed.y, speed.x) + Math.PI / 2;
-		g2d.rotate(angle, location.x, location.y);
+		g2d.rotate(angle, position.x, position.y);
 
 		g2d.fillPolygon(
-				new int[] { (int) location.x, (int) (location.x - 3), (int) location.x, (int) (location.x + 3) },
-				new int[] { (int) location.y, (int) (location.y + 12), (int) (location.y + 9),
-						(int) (location.y + 12) },
+				new int[] { (int) position.x, (int) (position.x - 3), (int) position.x, (int) (position.x + 3) },
+				new int[] { (int) position.y, (int) (position.y + 12), (int) (position.y + 9),
+						(int) (position.y + 12) },
 				4);
 
 		g2d.setTransform(transform);
@@ -85,96 +86,85 @@ public class Boid extends GameObject {
 		return null;
 	}
 
-	private Vector seperation() {
-
-		var desiredSeperation = 50;
-		var steer = new Vector();
-		var count = 0;
-
-		for (GameObject other : handler.object) {
-			if (other.getId() == ID.BOID) {
-				float d = location.dist(other.getLocation());
-
-				if (other != this && d <= desiredSeperation) {
-					Vector diff = new Vector().sub(this.location, other.getLocation());
-					diff.normalize();
-					diff.div(d);
-					steer.add(diff);
-					count++;
-				}
-			}
-		}
-
-		if (count > 0)
-			steer.div(count);
-
-		if (steer.mag() > 0) {
-			steer.normalize();
-			steer.mult(maxSpeed);
-			steer.sub(speed);
-			steer.limit(maxForce);
-		}
-
-		return steer;
-	}
-
 	private Vector align() {
-
-		var neighborDist = 25;
-		var sum = new Vector();
+		var neighborDist = 100;
+		var steering = new Vector();
 		var count = 0;
 
 		for (GameObject other : handler.object) {
 			if (other.getId() == ID.BOID) {
-				float d = location.dist(other.getLocation());
+				float d = position.dist(other.getPosition());
 
 				if (other != this && d <= neighborDist) {
-					sum.add(other.getSpeed());
+					steering.add(other.getSpeed());
 					count++;
 				}
 			}
 		}
 
 		if (count > 0) {
-			sum.div(count);
-			sum.normalize();
-			sum.mult(maxSpeed);
-			Vector steer = new Vector().sub(sum, speed);
-			steer.limit(maxForce);
-			return steer;
+			steering.div(count);
+			steering.setMag(maxSpeed);
+			steering.sub(speed);
+			steering.limit(maxForce);
 		}
 
-		return new Vector();
+		return steering;
 	}
 
 	private Vector cohesion() {
-
-		var neighborDist = 25;
-		var sum = new Vector();
+		var neighborDist = 100;
+		var steering = new Vector();
 		var count = 0;
 
 		for (GameObject other : handler.object) {
 			if (other.getId() == ID.BOID) {
-				float d = location.dist(other.getLocation());
+				float d = position.dist(other.getPosition());
 
 				if (other != this && d <= neighborDist) {
-					sum.add(other.getSpeed());
+					steering.add(other.getPosition());
 					count++;
 				}
 			}
 		}
 
 		if (count > 0) {
-			sum.div(count);
-			Vector desired = new Vector().sub(sum, location);
-			desired.normalize();
-			desired.mult(maxSpeed);
-			desired.limit(maxForce);
-			// steeting
-			return new Vector().sub(desired, speed);
+			steering.div(count);
+			steering.sub(position);
+			steering.setMag(maxSpeed);
+			steering.sub(speed);
+			steering.limit(maxForce);
 		}
 
-		return new Vector();
+		return steering;
+	}
+
+	private Vector seperation() {
+		var neighborDist = 50;
+		var steering = new Vector();
+		var count = 0;
+
+		for (GameObject other : handler.object) {
+			if (other.getId() == ID.BOID) {
+				float d = position.dist(other.getPosition());
+
+				if (other != this && d <= neighborDist) {
+					var diff = new Vector().sub(this.position, other.getPosition());
+					diff.mult(1 / d);
+					steering.add(diff);
+					count++;
+				}
+			}
+		}
+
+		if (count > 0) {
+			steering.div(count);
+			steering.setMag(maxSpeed);
+			steering.sub(speed);
+			steering.limit(maxForce);
+		}
+
+		return steering;
 	}
 
 }

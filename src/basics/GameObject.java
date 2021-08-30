@@ -5,7 +5,7 @@ import java.awt.Rectangle;
 
 public abstract class GameObject {
 
-	protected Vector location;
+	protected Vector position;
 	protected Vector speed;
 	protected Vector acceleration;
 	protected ID id;
@@ -52,18 +52,22 @@ public abstract class GameObject {
 			return new Vector(u.x - v.x, u.y - v.y);
 		}
 
-		public void mult(Vector v) {
+		public Vector mult(Vector v) {
 			x *= v.mag();
 			y *= v.mag();
+
+			return this;
 		}
 
 		public Vector mult(Vector u, Vector v) {
 			return new Vector(u.x * v.mag(), u.y * v.mag());
 		}
 
-		public void mult(float m) {
+		public Vector mult(float m) {
 			x *= m;
 			y *= m;
+
+			return this;
 		}
 
 		public Vector mult(Vector u, float m) {
@@ -75,9 +79,10 @@ public abstract class GameObject {
 			y /= v.mag();
 		}
 
-		public void div(float m) {
+		public Vector div(float m) {
 			x /= m;
 			y /= m;
+			return this;
 		}
 
 		public Vector div(Vector u, Vector v) {
@@ -88,20 +93,24 @@ public abstract class GameObject {
 			return (float) Math.sqrt(x * x + y * y);
 		}
 
-		public void normalize() {
-			x /= mag();
-			y /= mag();
+		public Vector normalize() {
+			var len = mag();
+			if (len != 0)
+				this.mult(1 / len);
+			return this;
 		}
 
-		public Vector normalize(Vector u) {
-			u.normalize();
-			return u;
+		public Vector limit(float max) {
+			var magSq = x * x + y * y;
+
+			if (magSq > max * max) {
+				this.div((float) Math.sqrt(magSq)).mult(max);
+			}
+			return this;
 		}
 
-		public void limit(float limit) {
-			this.normalize();
-			x *= Math.sqrt(limit * limit);
-			y *= Math.sqrt(limit * limit);
+		public Vector setMag(float n) {
+			return this.normalize().mult(n);
 		}
 
 		public float dist(Vector v) {
@@ -115,7 +124,7 @@ public abstract class GameObject {
 
 	protected GameObject(float x, float y, ID id) {
 
-		this.location = new Vector(x, y);
+		this.position = new Vector(x, y);
 		speed = new Vector();
 		acceleration = new Vector();
 		this.id = id;
@@ -127,12 +136,12 @@ public abstract class GameObject {
 
 	public abstract Rectangle getBounds();
 
-	public Vector getLocation() {
-		return location;
+	public Vector getPosition() {
+		return position;
 	}
 
-	public void setLocation(Vector location) {
-		this.location = location;
+	public void setPosition(Vector location) {
+		this.position = location;
 	}
 
 	public Vector getSpeed() {

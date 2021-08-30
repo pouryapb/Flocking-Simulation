@@ -13,7 +13,7 @@ import objects.Boid;
 public class Game extends Canvas implements Runnable {
 
 	private static final long serialVersionUID = -5571995104017886412L;
-	public static final int WIDTH = 1250;
+	public static final int WIDTH = 1350;
 	public static final int HEIGHT = WIDTH / 12 * 9;
 	private Thread thread;
 	private boolean running = false;
@@ -28,9 +28,9 @@ public class Game extends Canvas implements Runnable {
 		/////////////////////////////
 
 		var r = new Random();
-		for (var i = 0; i < 300; i++) {
+		for (var i = 0; i < 500; i++) {
 			handler.addObject(new Boid(new Random().nextInt(WIDTH), new Random().nextInt(HEIGHT), ID.BOID, handler,
-					r.nextFloat() * 2 - 1, r.nextFloat() * 2 - 1, 2.5f, 0.05f));
+					r.nextFloat() * 2 - 1, r.nextFloat() * 2 - 1, 4f, 0.5f));
 		}
 
 		/////////////////////////////
@@ -103,7 +103,7 @@ public class Game extends Canvas implements Runnable {
 
 		/////////////////////////////////////
 
-		g.setColor(Color.decode("#010f26"));
+		g.setColor(Color.decode("#212121"));
 		g.fillRect(0, 0, WIDTH, HEIGHT);
 
 		handler.render(g);
